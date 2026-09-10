@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from scipy.spatial.distance import minkowski
+
+pd.set_option('display.max_columns',None)
+pd.set_option('display.max_rows',None)
+
+def label_encoder(df,column):
+    le=LabelEncoder()
+    df[column]=le.fit_transform(df[column])
+    return df
+
+def onehot(df,column):
+    df=df.join(pd.get_dummies(df[column],prefix=column,dtype=int))
+    df.drop(column,axis=1,inplace=True)
+    return df
+
+def minkowski_dist(x,y,p):
+    distance=0
+    for i in range(len(x)):
+        distance+=abs(x[i]-y[i])**p
+    return distance**(1/p)
+
+df=pd.read_excel(r"C:\College\5th sem\machine learning lab\lab3\Lab Session Data.xlsx",sheet_name='marketing_campaign')
+
+print("before encoding:",df.shape)
+df=label_encoder(df,"Education")
+print(df.head())
+df=onehot(df,"Marital_Status")
+print(df.head())
+print("after encoding:",df.shape)
+
+p1=[1,2,3]
+p2=[3,6,7]
+d1=minkowski_dist(p1,p2,1)
+d2=minkowski_dist(p1,p2,2)
+print("p=1:",d1)
+print("p=2:",d2)
+
+numeric_df=df.select_dtypes(include=['int64','float64'])
+x=numeric_df.iloc[0].tolist()
+y=numeric_df.iloc[1].tolist()
+
+distance=[]
+for p in range(1,11):
+    mydist=minkowski_dist(x,y,p)
+    scidist=minkowski(x,y,p)
+    distance.append(mydist)
+    print(p,mydist,scidist)
